@@ -1,4 +1,7 @@
-# This project has been archived!
+# cloudfront-auth
+
+This is the [Rainmakers](https://github.com/rainmakers-global-inc) fork of
+<https://github.com/Widen/cloudfront-auth>.
 
 See https://github.com/Widen/cloudfront-auth/issues/104 for details about the status of this project.
 
