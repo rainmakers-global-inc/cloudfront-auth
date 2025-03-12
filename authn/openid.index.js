@@ -6,13 +6,27 @@ const jwkToPem = require('jwk-to-pem');
 const auth = require('./auth.js');
 const nonce = require('./nonce.js');
 const axios = require('axios');
+const AWS = require('aws-sdk');
 var discoveryDocument;
 var jwks;
 var config;
 
 exports.handler = (event, context, callback) => {
   if (typeof jwks == 'undefined' || typeof discoveryDocument == 'undefined' || typeof config == 'undefined') {
-    config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+    const [region, name] = context.functionName.split(".", 2);
+    const client = new AWS.SecretsManager({ region: region });
+    const secretId = `${name}/config.json`;
+
+    client.getSecretValue({ SecretId: secretId }, (err, data) => {
+      if (err) {
+        console.error('Error retrieving config.json:', err);
+        return;
+      }
+
+      const secret = data.SecretString;
+
+      config = JSON.parse(secret);
+    });
 
     // Get Discovery Document data
     console.log("Get discovery document data");

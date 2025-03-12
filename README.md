@@ -3,6 +3,48 @@
 This is the [Rainmakers](https://github.com/rainmakers-global-inc) fork of
 <https://github.com/Widen/cloudfront-auth>.
 
+It has been modified to read `config.json` from a AWS SSM secret.  An example
+method to create the secret might be omething like:
+
+```yaml
+- name: cloudfront-auth-github-example-com/config.json secret
+  vars:
+    client_id: >-
+      {{ lookup('community.general.passwordstore', 'example.com/oauth/github/client_id') }}
+    client_secret: >-
+      {{ lookup('community.general.passwordstore', 'example.com/oauth/github/client_secret') }}
+    PRIVATE_KEY: >-
+      {{
+          lookup('community.general.passwordstore',
+                 'example.com/oauth/github/PRIVATE_KEY',
+                 **{ 'returnall': true })
+      }}
+    json_secret:
+      DISTRIBUTION: cloudfront-auth-github-example-com
+      AUTHN: GITHUB
+      ORGANIZATION: example-org
+      CALLBACK_PATH: /_callback
+      SESSION_DURATION: 14400
+      AUTHORIZATION_ENDPOINT: https://github.com/login/oauth/authorize
+      AUTH_REQUEST:
+        redirect_uri: https://example.com/_callback
+        client_id: "{{ client_id }}"
+        scope: read:org user:email
+      TOKEN_ENDPOINT: https://github.com/login/oauth/access_token
+      TOKEN_REQUEST:
+        redirect_uri: https://example.com/_callback
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+      PRIVATE_KEY: >-
+        {{ PRIVATE_KEY }}
+      PUBLIC_KEY: >-
+        {{ (PRIVATE_KEY | community.crypto.openssl_privatekey_info).public_key }}
+  community.aws.secretsmanager_secret:
+    region: us-east-1
+    name: cloudfront-auth-github-example-com/config.json
+    json_secret: "{{ json_secret | ansible.builtin.to_nice_json }}"
+```
+
 See https://github.com/Widen/cloudfront-auth/issues/104 for details about the status of this project.
 
 ---
