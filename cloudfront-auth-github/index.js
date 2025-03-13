@@ -12,7 +12,7 @@ exports.handler = (event, context, callback) => {
   if (typeof config == 'undefined') {
     const [region, name] = context.functionName.split(".", 2);
     const client = new AWS.SecretsManager({ region: region });
-    const secretId = `${name}/config.json`;
+    const secretId = `/${name}/config.json`;
 
     client.getSecretValue({ SecretId: secretId }, (err, data) => {
       if (err) {
