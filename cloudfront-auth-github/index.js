@@ -5,14 +5,35 @@ const cookie = require('cookie');
 const jwkToPem = require('jwk-to-pem');
 const auth = require('./auth.js');
 const axios = require('axios');
+const { SecretsManager, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
 var config;
 
 exports.handler = (event, context, callback) => {
-  if (typeof config == 'undefined') {
-    config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-  }
-  mainProcess(event, context, callback);
+  getConfig(context)
+    .then(result => mainProcess(event, context, callback))
+    .catch(error => console.error(error));
 };
+
+async function getConfig(context) {
+  if (typeof config == 'undefined') {
+    try {
+      console.log(JSON.stringify(context));
+      const [region, name] = context.functionName.split(".", 2);
+      console.log(region);
+      console.log(name);
+      const client = new SecretsManager({ region: region });
+      const input = { SecretId: `/${name}/config.json` };
+      console.log(JSON.stringify(input));
+      const command = new GetSecretValueCommand(input);
+      const response = await client.send(command);
+      console.log(JSON.stringify(response));
+
+      config = JSON.parse(response.SecretString);
+    } catch (error) {
+        console.error("Error in getConfig()", error);
+    }
+  }
+}
 
 function mainProcess(event, context, callback) {
   // Get request, request headers, and querystring dictionary

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cd tests && npm install && cd .. && node tests/tests.js",
-    "build": "npm install && cd build && npm install && cd .. && node build/build.js"
+    "build": "cp package.json package-lock.json cloudfront-auth-github && cd cloudfront-auth-github && npm clean-install && zip -r ../cloudfront-auth-github ."
   },
   "author": "Widen Enterprises",
   "repository": "github:widen/cloudfront-auth",
