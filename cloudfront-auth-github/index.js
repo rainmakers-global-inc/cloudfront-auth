@@ -17,16 +17,11 @@ exports.handler = (event, context, callback) => {
 async function getConfig(context) {
   if (typeof config == 'undefined') {
     try {
-      console.log(JSON.stringify(context));
       const [region, name] = context.functionName.split(".", 2);
-      console.log(region);
-      console.log(name);
       const client = new SecretsManager({ region: region });
       const input = { SecretId: `/${name}/config.json` };
-      console.log(JSON.stringify(input));
       const command = new GetSecretValueCommand(input);
       const response = await client.send(command);
-      console.log(JSON.stringify(response));
 
       config = JSON.parse(response.SecretString);
     } catch (error) {
